@@ -4,6 +4,8 @@
 #ifndef _DC_MEMORY_H
 #define _DC_MEMORY_H
 
+#include <stddef.h>
+
 /* Initialize system heap memory so it can be used */
 void dcMemory_Init();
 
