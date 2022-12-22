@@ -2,6 +2,7 @@
 
 #include "dcMemory.h"
 #include <malloc.h>
+#include <stdio.h>
 
 unsigned long __ramsize = 0x00200000; // 2MB RAM
 unsigned long __stacksize = 0x00004000; // 16k stack
@@ -44,7 +45,7 @@ void dcStackAllocator_Release(SDC_StackAllocator* allocator)
 
 void* dcStackAllocator_Alloc(SDC_StackAllocator* allocator, size_t size, size_t align)
 {
-    unsigned char* alignedAddr = ((unsigned long)allocator->current + align - 1) & ~(align - 1);
+    unsigned char* alignedAddr = (unsigned char*)(((unsigned long)allocator->current + align - 1) & ~(align - 1));
     if( alignedAddr + size < allocator->end)
     {
         allocator->current = alignedAddr + size;
