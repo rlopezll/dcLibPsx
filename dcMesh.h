@@ -3,20 +3,25 @@
 #ifndef _DC_MESH_H
 #define _DC_MESH_H
 
+#include <stddef.h>
 #include <libgte.h>
+#include "dcMemory.h"
 
 /* VERTEX FORMATS */
 
-enum EDC_VertexFormat
+typedef enum
 {
-    POS,
-    POS_COL,
-    POS_COL_NORM
-    POS_TEX,
-    POS_TEX_NORM,
-    POS_COL_TEX,
-    POS_COL_TEXT_NORM
-};
+    DCVFMT_POS,
+    DCVFMT_POS_COL,
+    DCVFMT_POS_COL_NORM,
+    DCVFMT_POS_TEX,
+    DCVFMT_POS_TEX_NORM,
+    DCVFMT_POS_COL_TEX,
+    DCVFMT_POS_COL_TEXT_NORM,
+
+    DCVFMT_NUM_FORMATS
+    
+} EDC_VertexFormat;
 
 typedef struct
 {
@@ -77,6 +82,7 @@ typedef struct
 typedef struct
 {
     EDC_VertexFormat vtxFormat;
+    
     int     numVertices;
     int     numIndices;
     void*   vtxData;
@@ -84,7 +90,17 @@ typedef struct
 
 } SDC_Mesh;
 
-//void dcMesh_RecordToOT(SDC_Mesh* mesh, );
+typedef struct
+{
+    int      backFaceCullMode; // 0: no culling, 1: cull backface, -1: cull front face
+    CVECTOR  constantColor;
+
+    int      numLights;
+    SVECTOR* lights;
+
+} SDC_DrawParams;
+
+void dcMesh_Record(SDC_Mesh* mesh, SDC_DrawParams* drawParams, u_long* ot, long otSize, SDC_StackAllocator* renderMemory);
 
 
 #endif /* _DC_MESH_H */
