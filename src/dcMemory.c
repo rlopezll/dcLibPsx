@@ -36,6 +36,7 @@ void dcStackAllocator_Init(SDC_StackAllocator* allocator, size_t size)
 {
     allocator->base = (unsigned char*)malloc3(size);
     allocator->current = allocator->base;
+    allocator->end = allocator->base + size;
 }
 
 void dcStackAllocator_Release(SDC_StackAllocator* allocator)
@@ -45,6 +46,7 @@ void dcStackAllocator_Release(SDC_StackAllocator* allocator)
 
 void* dcStackAllocator_Alloc(SDC_StackAllocator* allocator, size_t size, size_t align)
 {
+    align = align > 0 ? align : 1;
     unsigned char* alignedAddr = (unsigned char*)(((unsigned long)allocator->current + align - 1) & ~(align - 1));
     if( alignedAddr + size < allocator->end)
     {
