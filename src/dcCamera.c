@@ -17,9 +17,9 @@ void dcCamera_LookAt(SDC_Camera* camera, const VECTOR* at) {
     
     // Divide out fractions of camera coordinates
     VECTOR eye;
-    eye.vx = camera->position.vx >> OFFSET_FIXED_VECTOR;
-    eye.vy = camera->position.vy >> OFFSET_FIXED_VECTOR;
-    eye.vz = camera->position.vz >> OFFSET_FIXED_VECTOR;
+    eye.vx = camera->position.vx;
+    eye.vy = camera->position.vy;
+    eye.vz = camera->position.vz;
 
     SVECTOR zaxis;
 	SVECTOR xaxis;
