@@ -1,20 +1,39 @@
 #include "dcRender.h"
 #include <malloc.h>
 #include <libetc.h>
+#include <stdio.h>
+#include <assert.h>
+
+int totalPrimitives = 0;
 
 void _dcRender_IncPrimitive(SDC_Render* render, size_t offset)
 {
+    u_char* base_ptr = render->primitives[render->doubleBufferIndex];
+    size_t nbytes = sizeof(u_char) * render->bytesPrimitives;
+    size_t curr_offset = render->nextPrimitive - base_ptr; 
+    if( curr_offset + offset >= nbytes) {
+        printf("Error!! Limit Primitives bytes '%d/%d'\n", curr_offset + offset, nbytes);
+    }
     render->nextPrimitive += offset;
+    ++totalPrimitives;
 }
 
-void dcRender_Init(SDC_Render* render, int width, int height, CVECTOR bgColor, int orderingTableCount, int primitivesCount, EDC_Mode mode) {
+void _dcRender_ReportPrimitivesSize(SDC_Render* render) {
+    u_char* base_ptr = render->primitives[render->doubleBufferIndex];
+    size_t nbytes = sizeof(u_char) * render->bytesPrimitives;
+    size_t curr_offset = render->nextPrimitive - base_ptr; 
+    printf("Primitives bytes '%d/%d' totalPrimitives %d\n", curr_offset, nbytes, totalPrimitives);
+    totalPrimitives = 0;
+}
+
+void dcRender_Init(SDC_Render* render, int width, int height, CVECTOR bgColor, int orderingTableCount, int bytesPrimitives, EDC_Mode mode) {
 	InitGeom();
 
     ResetGraph( 0 );
     SetGraphDebug(0);
 
     render->orderingTableCount = orderingTableCount;
-    render->primitivesCount = primitivesCount;
+    render->bytesPrimitives = bytesPrimitives;
     render->doubleBufferIndex = 0;
     render->width = width;
     render->height = height;
@@ -26,8 +45,8 @@ void dcRender_Init(SDC_Render* render, int width, int height, CVECTOR bgColor, i
     ClearOTagR( render->orderingTable[0], orderingTableCount );
     ClearOTagR( render->orderingTable[1], orderingTableCount );
     
-    render->primitives[0] = (u_char*)malloc3(sizeof(u_char) * primitivesCount);
-    render->primitives[1] = (u_char*)malloc3(sizeof(u_char) * primitivesCount);
+    render->primitives[0] = (u_char*)malloc3(sizeof(u_char) * bytesPrimitives);
+    render->primitives[1] = (u_char*)malloc3(sizeof(u_char) * bytesPrimitives);
     
     render->nextPrimitive = render->primitives[0];
 
@@ -52,7 +71,7 @@ void dcRender_Init(SDC_Render* render, int width, int height, CVECTOR bgColor, i
     SetGeomOffset(width>>1, height>>1);
 	// Set screen depth (basically FOV control, W/2 works best)
 	SetGeomScreen(width >> 1);
-    // SetVideoMode(mode==RENDER_MODE_NTCS?MODE_NTSC:MODE_PAL);
+    SetVideoMode(mode==RENDER_MODE_NTCS?MODE_NTSC:MODE_PAL);
 
     //Debug font (to remove)
     FntLoad(960, 256);
@@ -63,6 +82,8 @@ void dcRender_Init(SDC_Render* render, int width, int height, CVECTOR bgColor, i
 }
 
 void dcRender_SwapBuffers(SDC_Render* render) {
+    // _dcRender_ReportPrimitivesSize(render);
+    
     VSync( 0 );
     DrawSync( 0 );
     SetDispMask( 1 );
@@ -121,11 +142,14 @@ void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform,
 
     SetRotMatrix(transform);
     SetTransMatrix(transform);
-
+    
     for (int i = 0; i < mesh->numIndices; i += 3) {               
         u_short index0 = mesh->indices[i];
         u_short index1 = mesh->indices[i+1];
         u_short index2 = mesh->indices[i+2];
+        assert(index0 < mesh->numVertices);
+        assert(index1 < mesh->numVertices);
+        assert(index2 < mesh->numVertices);
         void *poly = render->nextPrimitive;    
         CVECTOR curr_color = {255, 255, 255};
         if(color) 
@@ -134,22 +158,12 @@ void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform,
         switch(mesh->polygonVertexType)
         {
             case POLIGON_VERTEX:
-            case POLIGON_VERTEX_COLOR:
             {
                 POLY_F3* polyF3 = (POLY_F3*)poly;
                 SetPolyF3(polyF3);
-                if(mesh->polygonVertexType == POLIGON_VERTEX_COLOR ) {
-                    SDC_VertexColor *vertexs = (SDC_VertexColor *)mesh->vertexs;
-                    if(!color) 
-                        curr_color = vertexs[index0].color;
-
-                    nclip = RotAverageNclip3(&vertexs[index0].position, &vertexs[index1].position, &vertexs[index2].position,
-                                            (long *)&polyF3->x0, (long *)&polyF3->x1, (long *)&polyF3->x2, &p, &otz, &flg);
-                } else {
-                    SDC_Vertex *vertexs = (SDC_Vertex *)mesh->vertexs;
-                    nclip = RotAverageNclip3(&vertexs[index0].position, &vertexs[index1].position, &vertexs[index2].position,
-                                            (long *)&polyF3->x0, (long *)&polyF3->x1, (long *)&polyF3->x2, &p, &otz, &flg);
-                }
+                SDC_Vertex *vertexs = (SDC_Vertex *)mesh->vertexs;
+                nclip = RotAverageNclip3(&vertexs[index0].position, &vertexs[index1].position, &vertexs[index2].position,
+                                        (long *)&polyF3->x0, (long *)&polyF3->x1, (long *)&polyF3->x2, &p, &otz, &flg);
                 setRGB0(polyF3, curr_color.r, curr_color.g, curr_color.b);
 
                 if (nclip <= 0) continue;
@@ -159,7 +173,7 @@ void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform,
                 _dcRender_IncPrimitive(render, sizeof(POLY_F3));
             }
             break;
-            case POLIGON_VERTEX_COLOR_GSHADED:
+            case POLIGON_VERTEX_COLOR:
             {
                 POLY_G3* polyG3 = (POLY_G3*)poly;
                 SDC_VertexColor *vertexs = (SDC_VertexColor *)mesh->vertexs;
@@ -171,7 +185,7 @@ void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform,
                     setRGB2(polyG3, color->r, color->g, color->b);
                 }
                 else {
-                    setRGB0(polyG3, vertexs[index0].color.r,   vertexs[index0].color.g,   vertexs[index0].color.b);
+                    setRGB0(polyG3, vertexs[index0].color.r, vertexs[index0].color.g, vertexs[index0].color.b);
                     setRGB1(polyG3, vertexs[index1].color.r, vertexs[index1].color.g, vertexs[index1].color.b);
                     setRGB2(polyG3, vertexs[index2].color.r, vertexs[index2].color.g, vertexs[index2].color.b);
                 }
@@ -192,7 +206,7 @@ void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform,
 
                 SetPolyFT3(polyFT3);
                 setRGB0(polyFT3, curr_color.r, curr_color.g, curr_color.b);
-                setUV3(polyFT3, vertexs[i].u , vertexs[i].v, vertexs[i+1].u , vertexs[i+1].v, vertexs[i+2].u , vertexs[i+2].v);
+                setUV3(polyFT3, vertexs[index0].u , vertexs[index0].v, vertexs[index1].u , vertexs[index1].v, vertexs[index2].u , vertexs[index2].v);
 
                 nclip = RotAverageNclip3(&vertexs[index0].position, &vertexs[index1].position, &vertexs[index2].position,
                                         (long *)&polyFT3->x0, (long *)&polyFT3->x1, (long *)&polyFT3->x2, &p, &otz, &flg);
@@ -204,7 +218,7 @@ void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform,
                 _dcRender_IncPrimitive(render, sizeof(POLY_FT3));
             }
             break;
-            case POLIGON_VERTEX_TEXTURED_GSHADED:
+            case POLIGON_VERTEX_TEXTURED_COLOR:
             {
                 POLY_GT3* polyGT3 = (POLY_GT3*)poly;
                 SDC_VertexTextured *vertexs = (SDC_VertexTextured *)mesh->vertexs;
@@ -214,7 +228,7 @@ void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform,
                 setRGB1(polyGT3, curr_color.r, curr_color.g, curr_color.b);
                 setRGB2(polyGT3, curr_color.r, curr_color.g, curr_color.b);
 
-                setUV3(polyGT3, vertexs[i].u , vertexs[i].v, vertexs[i+1].u , vertexs[i+1].v, vertexs[i+2].u , vertexs[i+2].v);
+                setUV3(polyGT3, vertexs[index0].u , vertexs[index0].v, vertexs[index1].u , vertexs[index1].v, vertexs[index2].u , vertexs[index2].v);
 
                 nclip = RotAverageNclip3(&vertexs[index0].position, &vertexs[index1].position, &vertexs[index2].position,
                                         (long *)&polyGT3->x0, (long *)&polyGT3->x1, (long *)&polyGT3->x2, &p, &otz, &flg);

@@ -17,7 +17,7 @@ typedef struct {
     CVECTOR    bgColor;
 
     int        orderingTableCount;
-    int        primitivesCount;
+    int        bytesPrimitives;
     
     DISPENV    displayEnvironment[2];
     DRAWENV    drawEnvironment[2];
@@ -34,37 +34,46 @@ typedef enum {
 typedef enum {
     POLIGON_VERTEX,
     POLIGON_VERTEX_COLOR,
-    POLIGON_VERTEX_COLOR_GSHADED,
+    POLIGON_VERTEX_COLOR_NORMAL,  //Gouraud-shaded (TODO)
     POLIGON_VERTEX_TEXTURED,
-    POLIGON_VERTEX_TEXTURED_GSHADED //Gouraud-shaded
+    POLIGON_VERTEX_TEXTURED_COLOR, //Gouraud-shaded
+    POLIGON_VERTEX_TEXTURED_NORMAL //Gouraud-shaded (TODO)
 } EDC_PolygonVertexType;
 
 
 typedef struct {
     SVECTOR position;
-} SDC_Vertex;
+} SDC_Vertex; // POLIGON_VERTEX
 
 typedef struct {
     SVECTOR position;
     CVECTOR color;
-} SDC_VertexColor;
+} SDC_VertexColor; // POLIGON_VERTEX_COLOR
 
 typedef struct {
     SVECTOR position;
     short	u;
     short	v;
-} SDC_VertexTextured;
+} SDC_VertexTextured; // POLIGON_VERTEX_TEXTURED
+
+typedef struct {
+    SVECTOR position;
+    CVECTOR color;
+    short	u;
+    short	v;
+} SDC_VertexColorTextured; // POLIGON_VERTEX_TEXTURED_COLOR
 
 typedef struct {
     void*     vertexs;
     u_short*  indices;
     const TIM_IMAGE* tim;
     u_short   numIndices;
+    u_short   numVertices;
     EDC_PolygonVertexType polygonVertexType;
     
 } SDC_Mesh3D;
 
-void dcRender_Init(SDC_Render* render, int width, int height, CVECTOR bgColor, int orderingTableLength/* = 4096*/, int primitivesLength/* = 8192*/, EDC_Mode mode );
+void dcRender_Init(SDC_Render* render, int width, int height, CVECTOR bgColor, int orderingTableLength/* = 4096*/, int bytesPrimitives/* = 8192*/, EDC_Mode mode );
 void dcRender_SwapBuffers(SDC_Render* render);
 
 void dcRender_LoadTexture(TIM_IMAGE* tim, long* texture);
