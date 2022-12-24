@@ -33,6 +33,7 @@ void dcRender_Init(SDC_Render* render, int width, int height, CVECTOR bgColor, i
 
     SetDefDrawEnv( &render->drawEnvironment[0],    0, 0,      width, height );
     SetDefDrawEnv( &render->drawEnvironment[1],    0, height, width, height );
+
     SetDefDispEnv( &render->displayEnvironment[0], 0, height, width, height );
     SetDefDispEnv( &render->displayEnvironment[1], 0, 0,      width, height );
 
@@ -170,9 +171,9 @@ void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform,
                     setRGB2(polyG3, color->r, color->g, color->b);
                 }
                 else {
-                    setRGB0(polyG3, vertexs[i].color.r,   vertexs[i].color.g,   vertexs[i].color.b);
-                    setRGB1(polyG3, vertexs[i+1].color.r, vertexs[i+1].color.g, vertexs[i+1].color.b);
-                    setRGB2(polyG3, vertexs[i+2].color.r, vertexs[i+2].color.g, vertexs[i+2].color.b);
+                    setRGB0(polyG3, vertexs[index0].color.r,   vertexs[index0].color.g,   vertexs[index0].color.b);
+                    setRGB1(polyG3, vertexs[index1].color.r, vertexs[index1].color.g, vertexs[index1].color.b);
+                    setRGB2(polyG3, vertexs[index2].color.r, vertexs[index2].color.g, vertexs[index2].color.b);
                 }
 
                 nclip = RotAverageNclip3(&vertexs[index0].position, &vertexs[index1].position, &vertexs[index2].position,
