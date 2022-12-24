@@ -1,9 +1,9 @@
-#include "dcUtilsMath.h"
+#include "dcMath.h"
 
 VECTOR VECTOR_UP = {0,ONE,0};
 VECTOR VECTOR_ZERO = {0,0,0};
 
-VECTOR dcUtilsMath_Cross(const SVECTOR* v0, const SVECTOR* v1)
+VECTOR dcMath_Cross(const SVECTOR* v0, const SVECTOR* v1)
 {   
     VECTOR cross = {
         ((v0->vy*v1->vz)-(v0->vz*v1->vy))>>12,
@@ -13,7 +13,7 @@ VECTOR dcUtilsMath_Cross(const SVECTOR* v0, const SVECTOR* v1)
     return cross;
 }
 
-SVECTOR dcUtilsMath_CrossS(const SVECTOR* v0, const SVECTOR* v1)
+SVECTOR dcMath_CrossS(const SVECTOR* v0, const SVECTOR* v1)
 {
     SVECTOR output;
     VECTOR input = {(((v0->vy*v1->vz)-(v0->vz*v1->vy))>>12),
@@ -25,7 +25,7 @@ SVECTOR dcUtilsMath_CrossS(const SVECTOR* v0, const SVECTOR* v1)
     return output;
 }
 
-SVECTOR dcUtilsMath_Normalize(const SVECTOR* vector)
+SVECTOR dcMath_Normalize(const SVECTOR* vector)
 {
     VECTOR input = {vector->vx, vector->vy, vector->vz};
     SVECTOR output;
@@ -33,12 +33,12 @@ SVECTOR dcUtilsMath_Normalize(const SVECTOR* vector)
     return output;
 }
 
-short dcUtilsMath_DotProduct(const SVECTOR* v0, const SVECTOR* v1)
+short dcMath_DotProduct(const SVECTOR* v0, const SVECTOR* v1)
 {
     return ((v0->vx * v1->vx)>>12) + ((v0->vy * v1->vy)>>12) + ((v0->vz * v1->vz)>>12);
 }
 
-long dcUtilsMath_Division(long value, long dividend)
+long dcMath_Division(long value, long dividend)
 {
     return (value<<12)/dividend;
 }

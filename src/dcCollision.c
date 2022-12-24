@@ -1,6 +1,6 @@
 
 #include "dcCollision.h"
-#include "dcUtilsMath.h"
+#include "dcMath.h"
 
 long dcCollision_RaySphereInteresct( VECTOR* rayOrigin, SVECTOR* rayDir, VECTOR* sphereCenter, long sphereRadius )
 {

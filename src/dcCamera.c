@@ -1,5 +1,5 @@
 #include "dcCamera.h"
-#include "dcUtilsMath.h"
+#include "dcMath.h"
 
 void dcCamera_SetCameraPositionVector(SDC_Camera* camera, const VECTOR* pos) {
     camera->position = *pos;
@@ -27,9 +27,9 @@ void dcCamera_LookAt(SDC_Camera* camera, const VECTOR* at) {
 
 	VECTOR taxis = {at->vx - eye.vx, at->vy - eye.vy, at->vz - eye.vz};
 	VectorNormalS(&taxis, &zaxis);
-    taxis = dcUtilsMath_Cross(&zaxis, &up);
+    taxis = dcMath_Cross(&zaxis, &up);
 	VectorNormalS(&taxis, &xaxis);
-	taxis = dcUtilsMath_Cross(&zaxis, &xaxis);
+	taxis = dcMath_Cross(&zaxis, &xaxis);
 	VectorNormalS(&taxis, &yaxis);
 
 	camera->viewMatrix.m[0][0] = xaxis.vx;	camera->viewMatrix.m[1][0] = yaxis.vx;	camera->viewMatrix.m[2][0] = zaxis.vx;
@@ -46,11 +46,11 @@ void dcCamera_LookAt(SDC_Camera* camera, const VECTOR* at) {
 void dcCamera_SetScreenResolution(SDC_Camera* camera, int width, int height) {
     const short realWidth = 320;
     const short realHeight = 240;
-    const short realAspect = dcUtilsMath_Division(realWidth,realHeight); 
-    const short currAspect = dcUtilsMath_Division(width,height); 
-    const short delta = dcUtilsMath_Division(currAspect, realAspect);
+    const short realAspect = dcMath_Division(realWidth,realHeight); 
+    const short currAspect = dcMath_Division(width,height); 
+    const short delta = dcMath_Division(currAspect, realAspect);
     camera->viewScale.vx = ONE;
-    camera->viewScale.vy = dcUtilsMath_Division(ONE,delta);
+    camera->viewScale.vy = dcMath_Division(ONE,delta);
     camera->viewScale.vz = ONE;
 }
 

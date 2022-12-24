@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "dcRender.h"
 #include "dcMemory.h"
-#include "dcUtilsMath.h"
+#include "dcMath.h"
 
 SDC_Mesh3D* dcMisc_generateSphereMesh(long radius, unsigned latDivs, unsigned longDivs)
 {
