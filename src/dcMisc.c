@@ -31,10 +31,11 @@ SDC_Mesh3D* dcMisc_generateSphereMesh(long radius, unsigned latDivs, unsigned lo
     dcStackAllocator_Init(&sa, nBytes);
 
     SDC_Mesh3D* mesh = (SDC_Mesh3D*)dcStackAllocator_Alloc(&sa, sizeof(SDC_Mesh3D), 1 );
-    mesh->polygonVertexType = POLIGON_VERTEX_COLOR_GSHADED;
+    mesh->polygonVertexType = POLIGON_VERTEX_COLOR;
     mesh->vertexs = dcStackAllocator_Alloc(&sa, sizeof(SDC_VertexColor) * numVertices, 4 );
     mesh->indices = dcStackAllocator_Alloc(&sa, sizeof(u_short) * numIndices, 2 );
     mesh->numIndices = numIndices;
+    mesh->numVertices = numVertices;
 
     // generate the mesh data
     SDC_VertexColor* verts = (SDC_VertexColor*)mesh->vertexs;
