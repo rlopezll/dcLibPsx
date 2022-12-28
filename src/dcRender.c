@@ -145,12 +145,12 @@ void dcRender_LoadTexture(TIM_IMAGE* tim, u_long* texture) {
     DrawSync(0);                                // Wait for drawing to end
 }
 
-void dcRender_DrawSpriteRect(SDC_Render* render, const TIM_IMAGE *tim, const SVECTOR *pos, const RECT *rect, const DVECTOR *uv, const CVECTOR *color) {
+void dcRender_DrawSpriteRect(SDC_Render* render, const TIM_IMAGE *tim, short x, short y, short w, short h, const DVECTOR *uv, const CVECTOR *color) {
     SPRT *sprt = (SPRT*)render->nextPrimitive;
 
     setSprt(sprt);
-    setXY0(sprt, pos->vx, pos->vy);
-    setWH(sprt, rect->w, rect->h);
+    setXY0(sprt, x, y);
+    setWH(sprt, w, h);
     setRGB0(sprt, color->r, color->g, color->b);
     setUV0(sprt, uv->vx, uv->vy);
     setClut(sprt, tim->crect->x, tim->crect->y);
