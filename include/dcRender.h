@@ -93,11 +93,12 @@ typedef struct {
 
 typedef struct
 {
-    CVECTOR   constantColor;
-    short int backFaceCullMode; // 0: no culling, 1: cull backface, -1: cull front face
-    u_short   bLighting : 1;
-    u_short   bWireFrame : 1;
-    u_short   bUseConstantColor : 1;
+	TIM_IMAGE* tim;
+    CVECTOR    constantColor;
+    short int  backFaceCullMode; // 0: no culling, 1: cull backface, -1: cull front face
+    u_short    bLighting : 1;
+    u_short    bWireFrame : 1;
+    u_short    bUseConstantColor : 1;
 
 } SDC_DrawParams;
 
