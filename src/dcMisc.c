@@ -23,7 +23,7 @@ SDC_Mesh3D* dcMisc_generateSphereMesh(long radius, unsigned latDivs, unsigned lo
     unsigned numTriangles = 2 * longDivs + (latDivs - 1) * longDivs * 2;
     unsigned numIndices = numTriangles * 3;
 
-    size_t nBytes = sizeof(SDC_Mesh3D) + sizeof(SDC_VertexColor) * numVertices + sizeof(u_short) * numIndices;
+    size_t nBytes = sizeof(SDC_Mesh3D) + sizeof(SDC_VertexColorNormal) * numVertices + sizeof(u_short) * numIndices;
     nBytes += 8; // for alignment
 
     // Allocate the required memory using a stack allocator as helper
@@ -31,14 +31,14 @@ SDC_Mesh3D* dcMisc_generateSphereMesh(long radius, unsigned latDivs, unsigned lo
     dcStackAllocator_Init(&sa, nBytes);
 
     SDC_Mesh3D* mesh = (SDC_Mesh3D*)dcStackAllocator_Alloc(&sa, sizeof(SDC_Mesh3D), 1 );
-    mesh->polygonVertexType = POLIGON_VERTEX_COLOR;
-    mesh->vertexs = dcStackAllocator_Alloc(&sa, sizeof(SDC_VertexColor) * numVertices, 4 );
+    mesh->polygonVertexType = POLIGON_VERTEX_COLOR_NORMAL;
+    mesh->vertexs = dcStackAllocator_Alloc(&sa, sizeof(SDC_VertexColorNormal) * numVertices, 4 );
     mesh->indices = dcStackAllocator_Alloc(&sa, sizeof(u_short) * numIndices, 2 );
     mesh->numIndices = numIndices;
     mesh->numVertices = numVertices;
 
     // generate the mesh data
-    SDC_VertexColor* verts = (SDC_VertexColor*)mesh->vertexs;
+    SDC_VertexColorNormal* verts = (SDC_VertexColorNormal*)mesh->vertexs;
 
     // north pole
     verts[0].position.vx = 0;
@@ -67,7 +67,6 @@ SDC_Mesh3D* dcMisc_generateSphereMesh(long radius, unsigned latDivs, unsigned lo
         long sinLg = csin(lgAngle);
         long cosLg = ccos(lgAngle);
 
-        printf("angle: %d sin: %d cos: %d )\n", lgAngle, sinLg, cosLg);
         // north pole vert
         verts[i + 1].position.vx = DC_MUL(DC_MUL(sinLg, radius), sinLt);
         verts[i + 1].position.vy = y;
@@ -76,13 +75,6 @@ SDC_Mesh3D* dcMisc_generateSphereMesh(long radius, unsigned latDivs, unsigned lo
         verts[i + 1].color.r = (255 * lgAngle) / DC_ONEREV;
         verts[i + 1].color.g = 255 * ((cosLt + DC_ONE) >> 1) / DC_ONE;
         verts[i + 1].color.b = 255 * ((DC_ONE - cosLt) >> 1) / DC_ONE;
-
-        short vx = verts[i + 1].position.vx;
-        short vy = verts[i + 1].position.vy;
-        short vz = verts[i + 1].position.vz;
-        
-        //printf("(%d.%04d, %d.%04d, %d.%04d)\n", vx >> 12, (vx & 4095) * 10000 / 4096, vy >> 12, (vy & 4095) * 10000 / 4096, vz >> 12, (vz & 4095) * 10000 / 4096 );
-        printf("vtx: ( %d %d %d )\n", vx, vy, vz);
 
         // clockwise indices
         mesh->indices[i*3] = 0;
@@ -109,11 +101,6 @@ SDC_Mesh3D* dcMisc_generateSphereMesh(long radius, unsigned latDivs, unsigned lo
             verts[vtxIdx].position.vx = DC_MUL(DC_MUL(sinLg, radius), sinLt);
             verts[vtxIdx].position.vy = y;
             verts[vtxIdx].position.vz = DC_MUL(DC_MUL(cosLg, radius), sinLt);
-
-            short vx = verts[vtxIdx].position.vx;
-            short vy = verts[vtxIdx].position.vy;
-            short vz = verts[vtxIdx].position.vz;
-            printf("vtx: ( %d %d %d )\n", vx, vy, vz);
 
             verts[vtxIdx].color.r = (255 * lgAngle) / DC_ONEREV;;
             verts[vtxIdx].color.g = 255 * ((cosLt + DC_ONE) >> 1) / DC_ONE;
@@ -147,7 +134,58 @@ SDC_Mesh3D* dcMisc_generateSphereMesh(long radius, unsigned latDivs, unsigned lo
         mesh->indices[indicesIdx + i*3 + 2] = vtxIdx + i;
     }
 
+    // compute normals
+    for( int vi = 0; vi < numVertices; ++vi )
+    {
+        SDC_VertexColorNormal* vert = &verts[vi];
+        VECTOR pos = {
+            .vx = -vert->position.vx,
+            .vy = -vert->position.vy,
+            .vz = -vert->position.vz
+        };
+        VectorNormalS(&pos, &vert->normal);
+        vert->normal.vx = -vert->normal.vx;
+        vert->normal.vy = -vert->normal.vy;
+        vert->normal.vz = -vert->normal.vz;
+        printf("v: %d %d %d N: %d %d %d\n", pos.vx, pos.vy, pos.vz, vert->normal.vx, vert->normal.vy, vert->normal.vz );
+
+    }
 
     return mesh;
+};
 
+long dcMisc_noise(long x, long y, long z)
+{   
+    u_long ux = x;
+    u_long uy = y;
+    u_long uz = z;
+
+    ux ^= ux << 13;
+	ux ^= ux >> 17;
+	ux ^= ux << 5;
+    
+    uy ^= uy << 11;
+	uy ^= uy >> 19;
+	uy ^= uy << 7;
+
+    uz ^= uz << 17;
+	uz ^= uz >> 13;
+	uz ^= uz << 9;
+    
+    ux ^= uy ^ uz;
+    
+    ux *= 0x846ca68bU;
+    ux ^= ux >> 16;
+    
+    return ((long)ux) >> 20; // keep just decimal bits and sign
+};
+
+long dcMisc_fbm(long x, long y, long z)
+{
+    long r = dcMisc_noise(x, y, z) >> 1; // freq = 1, amplitude = 0.5
+    r += dcMisc_noise( x << 1, y << 1, z << 1 ) >> 2; // freq = 2, amplitude = 0.25
+    r += dcMisc_noise( x << 2, y << 2, z << 2 ) >> 3; // freq = 4, amplitude = 0.125
+    r += dcMisc_noise( x << 3, y << 3, z << 3 ) >> 4; // freq = 8, amplitude = 0.0625
+    
+    return r;
 };

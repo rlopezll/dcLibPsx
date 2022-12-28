@@ -1,6 +1,7 @@
 
 #include "dcMesh.h"
 #include "dcMath.h"
+#include "dcRender.h"
 
 void dcMeshP_Record(SDC_Mesh* mesh, SDC_DrawParams* drawParams, u_long* ot, long otSize, SDC_StackAllocator* renderMemory);
 void dcMeshPC_Record(SDC_Mesh* mesh, SDC_DrawParams* drawParams, u_long* ot, long otSize, SDC_StackAllocator* renderMemory);

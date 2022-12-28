@@ -90,17 +90,8 @@ typedef struct
 
 } SDC_Mesh;
 
-typedef struct
-{
-    int      backFaceCullMode; // 0: no culling, 1: cull backface, -1: cull front face
-    CVECTOR  constantColor;
 
-    int      numLights;
-    SVECTOR* lights;
-
-} SDC_DrawParams;
-
-void dcMesh_Record(SDC_Mesh* mesh, SDC_DrawParams* drawParams, u_long* ot, long otSize, SDC_StackAllocator* renderMemory);
+//void dcMesh_Record(SDC_Mesh* mesh, SDC_DrawParams* drawParams, u_long* ot, long otSize, SDC_StackAllocator* renderMemory);
 
 
 #endif /* _DC_MESH_H */
