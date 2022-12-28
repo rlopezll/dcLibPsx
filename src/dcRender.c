@@ -102,7 +102,7 @@ void dcRender_SwapBuffers(SDC_Render* render) {
     render->nextPrimitive = render->primitives[render->doubleBufferIndex];    
 }
 
-void dcRender_LoadTexture(TIM_IMAGE* tim, long* texture) {
+void dcRender_LoadTexture(TIM_IMAGE* tim, unsigned long* texture) {
     OpenTIM(texture);                            // Open the tim binary data, feed it the address of the data in memory
     ReadTIM(tim);                                // This read the header of the TIM data and sets the corresponding members of the TIM_IMAGE structure
 
@@ -134,7 +134,8 @@ void dcRender_DrawSpriteRect(SDC_Render* render, const TIM_IMAGE *tim, const SVE
     _dcRender_IncPrimitive(render, sizeof(DR_TPAGE));
 }
 
-void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform, const CVECTOR *color) {
+void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform, const CVECTOR *color, const TIM_IMAGE *tim) {
+    assert(render && mesh && transform);
     u_long *orderingTable = render->orderingTable[render->doubleBufferIndex];
     int orderingTableCount = render->orderingTableCount;
     long p, otz, flg;
@@ -207,6 +208,10 @@ void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform,
                 SetPolyFT3(polyFT3);
                 setRGB0(polyFT3, curr_color.r, curr_color.g, curr_color.b);
                 setUV3(polyFT3, vertexs[index0].u , vertexs[index0].v, vertexs[index1].u , vertexs[index1].v, vertexs[index2].u , vertexs[index2].v);
+                if(tim) {
+                    polyFT3->tpage = getTPage(tim->mode, 0, tim->prect->x, tim->prect->y); /*texture page*/
+                    polyFT3->clut = GetClut (tim->crect->x, tim->crect->y); /*texture CLUT*/
+                }
 
                 nclip = RotAverageNclip3(&vertexs[index0].position, &vertexs[index1].position, &vertexs[index2].position,
                                         (long *)&polyFT3->x0, (long *)&polyFT3->x1, (long *)&polyFT3->x2, &p, &otz, &flg);

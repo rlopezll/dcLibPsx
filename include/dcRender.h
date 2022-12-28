@@ -76,8 +76,8 @@ typedef struct {
 void dcRender_Init(SDC_Render* render, int width, int height, CVECTOR bgColor, int orderingTableLength/* = 4096*/, int bytesPrimitives/* = 8192*/, EDC_Mode mode );
 void dcRender_SwapBuffers(SDC_Render* render);
 
-void dcRender_LoadTexture(TIM_IMAGE* tim, long* texture);
+void dcRender_LoadTexture(TIM_IMAGE* tim, unsigned long* texture);
 void dcRender_DrawSpriteRect(SDC_Render* render, const TIM_IMAGE *tim, const SVECTOR *pos, const RECT *rect, const DVECTOR *uv, const CVECTOR *color);
-void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform, const CVECTOR* color);
+void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform, const CVECTOR* color, const TIM_IMAGE *tim);
 
 #endif
