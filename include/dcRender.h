@@ -38,6 +38,7 @@ typedef enum {
 typedef enum {
     POLIGON_VERTEX,
     POLIGON_VERTEX_COLOR,
+    POLIGON_VERTEX_NORMAL,  //Gouraud-shaded (TODO)
     POLIGON_VERTEX_COLOR_NORMAL,  //Gouraud-shaded (TODO)
     POLIGON_VERTEX_TEXTURED,
     POLIGON_VERTEX_TEXTURED_COLOR, //Gouraud-shaded
@@ -56,8 +57,13 @@ typedef struct {
 
 typedef struct {
     SVECTOR position;
-    CVECTOR color;
     SVECTOR normal;
+} SDC_VertexNormal; // POLIGON_VERTEX_NORMAL
+
+typedef struct {
+    SVECTOR position;
+    SVECTOR normal;
+    CVECTOR color;
 } SDC_VertexColorNormal; // POLIGON_VERTEX_COLOR_NORMAL
 
 typedef struct {
@@ -75,11 +81,10 @@ typedef struct {
 
 typedef struct {
     SVECTOR position;
-    CVECTOR color;
     SVECTOR normal;
     short	u;
     short	v;
-} SDC_VertexColorTexturedNormal; // POLIGON_VERTEX_TEXTURED_NORMAL
+} SDC_VertexTexturedNormal; // POLIGON_VERTEX_TEXTURED_NORMAL
 
 typedef struct {
     void*     vertexs;
