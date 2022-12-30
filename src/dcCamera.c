@@ -27,7 +27,7 @@ void dcCamera_LookAt(SDC_Camera* camera, const VECTOR* at) {
 
 	VECTOR taxis = {at->vx - eye.vx, at->vy - eye.vy, at->vz - eye.vz};
 	VectorNormalS(&taxis, &zaxis);
-    taxis = dcMath_Cross(&zaxis, &up);
+    taxis = dcMath_Cross(&up, &zaxis );
 	VectorNormalS(&taxis, &xaxis);
 	taxis = dcMath_Cross(&zaxis, &xaxis);
 	VectorNormalS(&taxis, &yaxis);

@@ -38,6 +38,7 @@ typedef enum {
 typedef enum {
     POLIGON_VERTEX,
     POLIGON_VERTEX_COLOR,
+    POLIGON_VERTEX_NORMAL,  //Gouraud-shaded (TODO)
     POLIGON_VERTEX_COLOR_NORMAL,  //Gouraud-shaded (TODO)
     POLIGON_VERTEX_TEXTURED,
     POLIGON_VERTEX_TEXTURED_COLOR, //Gouraud-shaded
@@ -56,8 +57,13 @@ typedef struct {
 
 typedef struct {
     SVECTOR position;
-    CVECTOR color;
     SVECTOR normal;
+} SDC_VertexNormal; // POLIGON_VERTEX_NORMAL
+
+typedef struct {
+    SVECTOR position;
+    SVECTOR normal;
+    CVECTOR color;
 } SDC_VertexColorNormal; // POLIGON_VERTEX_COLOR_NORMAL
 
 typedef struct {
@@ -75,11 +81,10 @@ typedef struct {
 
 typedef struct {
     SVECTOR position;
-    CVECTOR color;
     SVECTOR normal;
     short	u;
     short	v;
-} SDC_VertexColorTexturedNormal; // POLIGON_VERTEX_TEXTURED_NORMAL
+} SDC_VertexTexturedNormal; // POLIGON_VERTEX_TEXTURED_NORMAL
 
 typedef struct {
     void*     vertexs;
@@ -106,7 +111,7 @@ void dcRender_Init(SDC_Render* render, int width, int height, CVECTOR bgColor, i
 void dcRender_SwapBuffers(SDC_Render* render);
 
 void dcRender_LoadTexture(TIM_IMAGE* tim, u_long* texture);
-void dcRender_DrawSpriteRect(SDC_Render* render, const TIM_IMAGE *tim, const SVECTOR *pos, const RECT *rect, const DVECTOR *uv, const CVECTOR *color);
+void dcRender_DrawSpriteRect(SDC_Render* render, const TIM_IMAGE *tim, short x, short y, short w, short h, const DVECTOR *uv, const CVECTOR *color);
 void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform, SDC_DrawParams* drawParams );
 
 /********** Light helper functions **********/

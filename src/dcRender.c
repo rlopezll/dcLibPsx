@@ -145,12 +145,12 @@ void dcRender_LoadTexture(TIM_IMAGE* tim, u_long* texture) {
     DrawSync(0);                                // Wait for drawing to end
 }
 
-void dcRender_DrawSpriteRect(SDC_Render* render, const TIM_IMAGE *tim, const SVECTOR *pos, const RECT *rect, const DVECTOR *uv, const CVECTOR *color) {
+void dcRender_DrawSpriteRect(SDC_Render* render, const TIM_IMAGE *tim, short x, short y, short w, short h, const DVECTOR *uv, const CVECTOR *color) {
     SPRT *sprt = (SPRT*)render->nextPrimitive;
 
     setSprt(sprt);
-    setXY0(sprt, pos->vx, pos->vy);
-    setWH(sprt, rect->w, rect->h);
+    setXY0(sprt, x, y);
+    setWH(sprt, w, h);
     setRGB0(sprt, color->r, color->g, color->b);
     setUV0(sprt, uv->vx, uv->vy);
     setClut(sprt, tim->crect->x, tim->crect->y);
@@ -293,6 +293,51 @@ void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform,
                 _dcRender_IncPrimitive(render, sizeof(POLY_G3));
 
             } break;
+            case POLIGON_VERTEX_NORMAL:
+            {
+                POLY_G3* polyG3 = (POLY_G3*)poly;
+                SDC_VertexNormal *vertexs = (SDC_VertexNormal *)mesh->vertexs;
+
+                SetPolyG3(polyG3);
+
+                if(bLighting)
+                {
+                    nclip = RotAverageNclipColorCol3
+                    (
+                        &vertexs[index0].position, &vertexs[index1].position, &vertexs[index2].position, // positions
+                        &vertexs[index0].normal, &vertexs[index1].normal, &vertexs[index2].normal, // normals
+                        &curr_color, // input color
+                        (long *)&polyG3->x0, (long *)&polyG3->x1, (long *)&polyG3->x2, // out 2d positions
+                        &c0, &c1, &c2, // out colors
+                        &otz, &flg
+                    );
+                    
+                    /**
+                     * TODO: we could pass white as input color to the above function and then multiply the output colors 
+                     * by each vertex color to get different colors per vertex.
+                    */
+
+                    setRGB0(polyG3, c0.r, c0.g, c0.b);
+                    setRGB1(polyG3, c1.r, c1.g, c1.b);
+                    setRGB2(polyG3, c2.r, c2.g, c2.b);
+                }
+                else
+                {
+                    nclip = RotAverageNclip3(&vertexs[index0].position, &vertexs[index1].position, &vertexs[index2].position,
+                                            (long *)&polyG3->x0, (long *)&polyG3->x1, (long *)&polyG3->x2, &p, &otz, &flg);
+
+                    setRGB0(polyG3, curr_color.r, curr_color.g, curr_color.b);
+                    setRGB1(polyG3, curr_color.r, curr_color.g, curr_color.b);
+                    setRGB2(polyG3, curr_color.r, curr_color.g, curr_color.b);
+                }
+
+                if (nclip <= 0) continue;
+                if ((otz <= 0) || (otz >= orderingTableCount)) continue;
+
+				addPrim(&orderingTable[otz], polyG3);
+                _dcRender_IncPrimitive(render, sizeof(POLY_G3));
+
+            } break;
             case POLIGON_VERTEX_TEXTURED:
             {
                 POLY_FT3* polyFT3 = (POLY_FT3*)poly;
@@ -340,7 +385,7 @@ void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform,
             case POLIGON_VERTEX_TEXTURED_NORMAL:
             {
                 POLY_GT3* polyGT3 = (POLY_GT3*)poly;
-                SDC_VertexColorTexturedNormal *vertexs = (SDC_VertexColorTexturedNormal *)mesh->vertexs;
+                SDC_VertexTexturedNormal *vertexs = (SDC_VertexTexturedNormal *)mesh->vertexs;
                 SetPolyGT3(polyGT3);
 
                 nclip = RotAverageNclip3(&vertexs[index0].position, &vertexs[index1].position, &vertexs[index2].position,
@@ -368,6 +413,10 @@ void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform,
                 }
 
                 setUV3(polyGT3, vertexs[index0].u , vertexs[index0].v, vertexs[index1].u , vertexs[index1].v, vertexs[index2].u , vertexs[index2].v);
+                if(drawParams && drawParams->tim) {
+                    polyGT3->tpage = getTPage(drawParams->tim->mode, 0, drawParams->tim->prect->x, drawParams->tim->prect->y); /*texture page*/
+                    polyGT3->clut = GetClut (drawParams->tim->crect->x, drawParams->tim->crect->y); /*texture CLUT*/
+                }
 
 				addPrim(&orderingTable[otz], polyGT3);
                 _dcRender_IncPrimitive(render, sizeof(POLY_GT3));
