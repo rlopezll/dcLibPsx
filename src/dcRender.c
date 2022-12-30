@@ -427,4 +427,49 @@ void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform,
     }
 }
 
+void dcRender_DrawLine(SDC_Render* render, SVECTOR* v0, SVECTOR* v1, MATRIX* transform, CVECTOR* color, u_short segments )
+{
+    
+    assert(render && v0 && v1 && transform && segments > 0);
+    u_long *orderingTable = render->orderingTable[render->doubleBufferIndex];
+    int orderingTableCount = render->orderingTableCount;
+    long p, flg;
+
+    SetRotMatrix(transform);
+    SetTransMatrix(transform);
+    
+    CVECTOR curr_color = {255, 255, 255};
+
+    if(color) 
+    {
+        curr_color = *color;
+    }
+
+    short xDelta = (v1->vx - v0->vx) / segments;
+    short yDelta = (v1->vy - v0->vy) / segments;
+    short zDelta = (v1->vz - v0->vz) / segments;
+
+    SVECTOR p0 = *v0;
+
+    for(u_short i = 0; i < segments; ++ i)
+    {
+        SVECTOR p1 = {p0.vx + xDelta, p0.vy + yDelta, p0.vz + zDelta};
+
+        void *poly = render->nextPrimitive;
+        LINE_F2* lineF2 = (LINE_F2*)poly;
+        SetLineF2(lineF2);
+        long otz = RotTransPers(&p0, (long*)&lineF2->x0, &p, &flg);
+        long otz1 = RotTransPers(&p1, (long*)&lineF2->x1, &p, &flg);
+
+        otz = (otz + otz1) >> 1;
+
+        p0 = p1;
+        if ((otz < 0) || (otz >= orderingTableCount)) continue;
+
+        setRGB0(lineF2, curr_color.r, curr_color.g, curr_color.b);
+        addPrim(orderingTable[otz], lineF2);
+        _dcRender_IncPrimitive(render, sizeof(LINE_F2));
+    }
+}
+
 //#pragma GCC pop_options

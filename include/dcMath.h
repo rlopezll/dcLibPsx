@@ -26,6 +26,7 @@ static long DC_MUL64(long v0, long v1);
 
 #define DC_MAX(a,b) (((a) > (b)) ? (a) : (b))
 #define DC_MIN(a,b) (((a) < (b)) ? (a) : (b))
+#define DC_LERP(fixedA, fixedB, alpha)( DC_MUL64(fixedA, DC_ONE - (alpha)) + DC_MUL64(fixedB, alpha) )
 
 short   dcMath_DotProduct(const SVECTOR* v0, const SVECTOR* v1);
 VECTOR  dcMath_Cross(const SVECTOR* v0, const SVECTOR* v1);

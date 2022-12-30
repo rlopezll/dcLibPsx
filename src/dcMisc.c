@@ -4,6 +4,7 @@
 #include "dcRender.h"
 #include "dcMemory.h"
 #include "dcMath.h"
+#include "dcCamera.h"
 
 SDC_Mesh3D* dcMisc_generateSphereMesh(long radius, unsigned latDivs, unsigned longDivs)
 {
@@ -189,3 +190,34 @@ long dcMisc_fbm(long x, long y, long z)
     
     return r;
 };
+
+
+void dcMisc_DrawAxis(SDC_Render* render, SDC_Camera* camera)
+{
+    const short halfSize = ONE;
+
+    //SVECTOR zero = {0};
+
+    CVECTOR cx = {255, 0, 0};
+    SVECTOR x0 = {-halfSize, 0, 0};
+    SVECTOR x1 = {halfSize, 0, 0};
+
+    CVECTOR cy = {0, 255, 0};
+    SVECTOR y0 = { 0, -halfSize, 0};
+    SVECTOR y1 = { 0, halfSize, 0};
+
+    CVECTOR cz = {0, 0, 255};
+    SVECTOR z0 = { 0, 0, -halfSize};
+    SVECTOR z1 = { 0, 0, halfSize};
+
+    MATRIX MVP = {0};
+    SVECTOR rot = {0};
+
+    RotMatrix(&rot, &MVP);
+    dcCamera_ApplyCameraTransform(camera, &MVP, &MVP);
+
+    dcRender_DrawLine(render, &x0, &x1, &MVP, &cx, 32);
+    dcRender_DrawLine(render, &y0, &y1, &MVP, &cy, 32);
+    dcRender_DrawLine(render, &z0, &z1, &MVP, &cz, 32);
+}
+
