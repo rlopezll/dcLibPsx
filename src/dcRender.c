@@ -116,8 +116,8 @@ void dcRender_SetAmbientColor(SDC_Render* render, CVECTOR* ambientColor)
 void dcRender_SwapBuffers(SDC_Render* render) {
     // _dcRender_ReportPrimitivesSize(render);
     
-    VSync( 0 );
     DrawSync( 0 );
+    VSync( 0 );
     SetDispMask( 1 );
     
     render->doubleBufferIndex = !render->doubleBufferIndex;
