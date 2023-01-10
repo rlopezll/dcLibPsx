@@ -116,8 +116,8 @@ void dcRender_SetAmbientColor(SDC_Render* render, CVECTOR* ambientColor)
 void dcRender_SwapBuffers(SDC_Render* render) {
     // _dcRender_ReportPrimitivesSize(render);
     
-    VSync( 0 );
     DrawSync( 0 );
+    VSync( 0 );
     SetDispMask( 1 );
     
     render->doubleBufferIndex = !render->doubleBufferIndex;
@@ -364,7 +364,7 @@ void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform,
             case POLIGON_VERTEX_TEXTURED_COLOR:
             {
                 POLY_GT3* polyGT3 = (POLY_GT3*)poly;
-                SDC_VertexTextured *vertexs = (SDC_VertexTextured *)mesh->vertexs;
+                SDC_VertexColorTextured *vertexs = (SDC_VertexColorTextured *)mesh->vertexs;
                 SetPolyGT3(polyGT3);
 
                 setRGB0(polyGT3, curr_color.r, curr_color.g, curr_color.b);
