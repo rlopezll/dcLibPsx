@@ -1,10 +1,12 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <memory.h>
 #include "dcRender.h"
 #include "dcMemory.h"
 #include "dcMath.h"
 #include "dcCamera.h"
+
 
 SDC_Mesh3D* dcMisc_generateSphereMesh(long radius, unsigned latDivs, unsigned longDivs)
 {
@@ -155,7 +157,80 @@ SDC_Mesh3D* dcMisc_generateSphereMesh(long radius, unsigned latDivs, unsigned lo
     return mesh;
 };
 
-long dcMisc_noise(long x, long y, long z)
+SDC_Mesh3D* dcMisc_GeneratePlaneMeshXZ(long halfSize, u_long xDivs, u_long zDivs, EDC_PolygonVertexType vFormat)
+{
+    u_long vSize = dcRender_VertexSize(vFormat);
+    u_long numVertices = (xDivs + 1) * (zDivs + 1);
+    u_long numIndices = 6 * xDivs * zDivs; // 2 triangles per quad
+
+    const long halfSizeZ = halfSize;
+    const long halfSizeX = halfSize;
+
+    long z = -halfSizeZ;
+    long x = -halfSizeX;
+
+    const long xOffset = (halfSizeX << 1) / xDivs;
+    const long zOffset = (halfSizeZ << 1) / zDivs;
+
+    size_t nBytes = sizeof(SDC_Mesh3D) + vSize * numVertices + sizeof(u_short) * numIndices;
+    nBytes += 8; // for alignment
+
+    // Allocate the required memory using a stack allocator as helper
+    SDC_StackAllocator sa;
+    dcStackAllocator_Init(&sa, nBytes);
+
+    SDC_Mesh3D* mesh = (SDC_Mesh3D*)dcStackAllocator_Alloc(&sa, sizeof(SDC_Mesh3D), 1 );
+    mesh->polygonVertexType = vFormat;
+    mesh->vertexs = dcStackAllocator_Alloc(&sa, vSize * numVertices, 4 );
+    mesh->indices = dcStackAllocator_Alloc(&sa, sizeof(u_short) * numIndices, 2 );
+    mesh->numIndices = numIndices;
+    mesh->numVertices = numVertices;
+
+    u_char* vertexData = (u_char*)mesh->vertexs;
+    memset(vertexData, 0xFF, vSize * numVertices);
+
+    u_short*  indices = mesh->indices;
+
+    // generate vertices
+    for( int i = 0; i < zDivs + 1; ++i  )
+    {
+        for( int j = 0; j < xDivs + 1; ++j  )
+        {
+            SDC_Vertex* v = (SDC_Vertex*)(vertexData + (i * (xDivs + 1) + j) * vSize);
+            v->position.vx = x;
+            v->position.vy = 0;
+            v->position.vz = z;
+
+            x += xOffset;
+        }
+        x = -halfSizeX;
+        z += zOffset;
+    }
+
+    u_short vertsPerRow = (xDivs + 1);
+    // generate indices
+    for( int i = 0; i < zDivs; ++i  )
+    {
+        for( int j = 0; j < xDivs; ++j  )
+        {
+            // top left triangle
+            const u_long firtIdxIdx = (i * xDivs + j) * 6;
+
+            indices[ firtIdxIdx ] = i * vertsPerRow + j; // top-left
+            indices[ firtIdxIdx + 1 ] = i * vertsPerRow + j + 1; // top-right
+            indices[ firtIdxIdx + 2 ] = (i + 1) * vertsPerRow + j; // bottom-left
+        
+            // bottom right triangle
+            indices[ firtIdxIdx + 3 ] = (i + 1) * vertsPerRow + j; //bottom-left
+            indices[ firtIdxIdx + 4 ] = i * vertsPerRow + j + 1; // top-right
+            indices[ firtIdxIdx + 5 ] = (i + 1) * vertsPerRow + j + 1; // bottom-right
+        }
+    }
+
+    return mesh;
+}
+
+long dcMisc_Noise(long x, long y, long z)
 {   
     u_long ux = x;
     u_long uy = y;
@@ -173,22 +248,27 @@ long dcMisc_noise(long x, long y, long z)
 	uz ^= uz >> 13;
 	uz ^= uz << 9;
     
-    ux ^= uy ^ uz;
+    u_long r = ux ^ uy ^ uz;
     
-    ux *= 0x846ca68bU;
-    ux ^= ux >> 16;
-    
-    return ((long)ux) >> 20; // keep just decimal bits and sign
+    r ^= r >> 16;
+    r *= 0x21f0aaad;
+    r ^= r >> 15;
+    r *= 0xd35a2d97;
+    r ^= r >> 16;
+
+    return ((long)r) >> 19; // keep just decimal bits and sign
 };
 
-long dcMisc_fbm(long x, long y, long z)
+long dcMisc_Fbm(long x, long y, long z)
 {
-    long r = dcMisc_noise(x, y, z) >> 1; // freq = 1, amplitude = 0.5
-    r += dcMisc_noise( x << 1, y << 1, z << 1 ) >> 2; // freq = 2, amplitude = 0.25
-    r += dcMisc_noise( x << 2, y << 2, z << 2 ) >> 3; // freq = 4, amplitude = 0.125
-    r += dcMisc_noise( x << 3, y << 3, z << 3 ) >> 4; // freq = 8, amplitude = 0.0625
-    
-    return r;
+    long r = dcMisc_Noise(x, y, z) >> 1; // freq = 1, amplitude = 0.5
+    r += dcMisc_Noise( x << 1, y << 1, z << 1 ) >> 2; // freq = 2, amplitude = 0.25
+    r += dcMisc_Noise( x << 2, y << 2, z << 2 ) >> 3; // freq = 4, amplitude = 0.125
+    r += dcMisc_Noise( x << 3, y << 3, z << 3 ) >> 4; // freq = 8, amplitude = 0.0625
+
+    // Ok, so theoretically we should be multiplying this thing by  4370 or something like this in order to normalize
+    // the result, but it does not work. So I just found this constant empirically which seems to work better
+    return DC_MUL(r, 4793); 
 };
 
 
