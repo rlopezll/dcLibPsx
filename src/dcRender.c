@@ -472,4 +472,21 @@ void dcRender_DrawLine(SDC_Render* render, SVECTOR* v0, SVECTOR* v1, MATRIX* tra
     }
 }
 
+u_long dcRender_VertexSize( EDC_PolygonVertexType vertexType )
+{
+    switch(vertexType)
+    {
+        case POLIGON_VERTEX: return sizeof(SDC_Vertex);
+        case POLIGON_VERTEX_COLOR: return sizeof(SDC_VertexColor);
+        case POLIGON_VERTEX_NORMAL: return sizeof(SDC_VertexNormal);
+        case POLIGON_VERTEX_COLOR_NORMAL: return sizeof(SDC_VertexColorNormal);
+        case POLIGON_VERTEX_TEXTURED: return sizeof(SDC_VertexTextured);
+        case POLIGON_VERTEX_TEXTURED_COLOR: return sizeof(SDC_VertexColorTextured);
+        case POLIGON_VERTEX_TEXTURED_NORMAL: return sizeof(SDC_VertexTexturedNormal);
+    };
+    
+    assert(0);
+    return 0;
+}
+
 //#pragma GCC pop_options

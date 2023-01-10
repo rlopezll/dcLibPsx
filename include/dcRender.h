@@ -38,8 +38,8 @@ typedef enum {
 typedef enum {
     POLIGON_VERTEX,
     POLIGON_VERTEX_COLOR,
-    POLIGON_VERTEX_NORMAL,  //Gouraud-shaded (TODO)
-    POLIGON_VERTEX_COLOR_NORMAL,  //Gouraud-shaded (TODO)
+    POLIGON_VERTEX_NORMAL,  //Gouraud-shaded
+    POLIGON_VERTEX_COLOR_NORMAL,  //Gouraud-shaded
     POLIGON_VERTEX_TEXTURED,
     POLIGON_VERTEX_TEXTURED_COLOR, //Gouraud-shaded
     POLIGON_VERTEX_TEXTURED_NORMAL //Gouraud-shaded (TODO)
@@ -138,5 +138,11 @@ void dcRender_SetLight(SDC_Render* render, u_short lightIdx, const SVECTOR* ligh
  * Sets ambient color for lighting calculations. 
 */
 void dcRender_SetAmbientColor(SDC_Render* render, CVECTOR* ambientColor);
+
+/**
+ * Return size in bytes of vertex type
+*/
+u_long dcRender_VertexSize( EDC_PolygonVertexType vertexType );
+
 
 #endif
