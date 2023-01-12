@@ -96,6 +96,16 @@ typedef struct {
     
 } SDC_Mesh3D;
 
+typedef struct {
+    SVECTOR rot; //we are use the rot.pad -> frame
+    VECTOR  scale;
+} SDC_AnimFrame; // Frame
+
+typedef struct {
+    SDC_AnimFrame* frames;
+    u_short        numFrames;
+} SDC_Animation; // Animation
+
 typedef struct
 {
 	TIM_IMAGE* tim;
