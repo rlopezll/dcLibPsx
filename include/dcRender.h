@@ -108,7 +108,7 @@ typedef struct {
 
 typedef struct
 {
-	TIM_IMAGE* tim;
+	const TIM_IMAGE* tim;
     CVECTOR    constantColor;
     short int  backFaceCullMode; // 0: no culling, 1: cull backface, -1: cull front face
     u_short    bLighting : 1;
