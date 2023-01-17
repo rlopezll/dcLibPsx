@@ -13,7 +13,7 @@ typedef struct {
 
 typedef struct {
     SDC_SpriteFrame* frames;
-    TIM_IMAGE* timImage;
+    SDC_TIM_IMAGE* timImage;
     u_char speed;
     u_char nframes;
     char dummy0, dummy1;

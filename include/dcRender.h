@@ -6,6 +6,16 @@
 #include <libgpu.h>
 #include <libgs.h>
 
+/*
+ *	Multi-purpose TIM image
+ */
+typedef struct {
+	u_long  mode;		/* pixel mode */
+	RECT	crect;		/* CLUT rectangle on frame buffer */
+	u_long	*caddr;		/* CLUT address on main memory */
+	RECT	prect;		/* texture image rectangle on frame buffer */
+	u_long	*paddr;		/* texture image address on main memory */
+} SDC_TIM_IMAGE;
 typedef struct {
 
     int       width;
@@ -89,7 +99,7 @@ typedef struct {
 typedef struct {
     void*     vertexs;
     u_short*  indices;
-    const TIM_IMAGE* tim;
+    const SDC_TIM_IMAGE* tim;
     u_short   numIndices;
     u_short   numVertices;
     EDC_PolygonVertexType polygonVertexType;
@@ -108,7 +118,7 @@ typedef struct {
 
 typedef struct
 {
-	TIM_IMAGE* tim;
+	SDC_TIM_IMAGE* tim;
     CVECTOR    constantColor;
     short int  backFaceCullMode; // 0: no culling, 1: cull backface, -1: cull front face
     u_short    bLighting : 1;
@@ -118,10 +128,12 @@ typedef struct
 } SDC_DrawParams;
 
 void dcRender_Init(SDC_Render* render, int width, int height, CVECTOR bgColor, int orderingTableLength/* = 4096*/, int bytesPrimitives/* = 8192*/, EDC_Mode mode );
-void dcRender_SwapBuffers(SDC_Render* render);
+int  dcRender_SwapBuffers(SDC_Render* render);
 
-void dcRender_LoadTexture(TIM_IMAGE* tim, u_long* texture);
-void dcRender_DrawSpriteRect(SDC_Render* render, const TIM_IMAGE *tim, short x, short y, short w, short h, const DVECTOR *uv, const CVECTOR *color);
+void dcRender_ReportPrimitivesSize(SDC_Render* render);
+
+void dcRender_LoadTexture(SDC_TIM_IMAGE* tim, u_long* texture);
+void dcRender_DrawSpriteRect(SDC_Render* render, const SDC_TIM_IMAGE *tim, short x, short y, short w, short h, const DVECTOR *uv, const CVECTOR *color);
 void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform, SDC_DrawParams* drawParams );
 void dcRender_DrawLine(SDC_Render* render, SVECTOR* v0, SVECTOR* v1, MATRIX* transform, CVECTOR* color, u_short segments);
 

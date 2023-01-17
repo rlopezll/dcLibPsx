@@ -6,7 +6,7 @@
 #include <assert.h>
 
 void dcSprite_LoadAnimationTex(SDC_SpriteAnimation* animation, u_long *image_data) {
-    animation->timImage = (TIM_IMAGE*)malloc3(sizeof(TIM_IMAGE));
+    animation->timImage = (SDC_TIM_IMAGE*)malloc3(sizeof(SDC_TIM_IMAGE));
     dcRender_LoadTexture(animation->timImage, image_data);  
 }
 
