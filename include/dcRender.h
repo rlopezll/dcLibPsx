@@ -16,6 +16,7 @@ typedef struct {
 	RECT	prect;		/* texture image rectangle on frame buffer */
 	u_long	*paddr;		/* texture image address on main memory */
 } SDC_TIM_IMAGE;
+
 typedef struct {
 
     int       width;
