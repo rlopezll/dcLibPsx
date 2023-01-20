@@ -3,6 +3,7 @@
 #define _DC_MISC_H
 
 #include "dcRender.h"
+#include "dcCamera.h"
 
 struct SDC_Camera;
 
