@@ -58,7 +58,7 @@ void dcAudio_Init(SDC_Audio *audio, int nsfxs) {
     // }
 
     // Those array will hold the return values of the CD commands
-    u_char param[4], result[8];
+    u_char param[4];
     // Set CD parameters ; Report Mode ON, CD-DA ON, and Auto Pause. See LibeOver47.pdf, p.180
     param[0] = CdlModeRept|CdlModeDA|CdlModeAP;	
     CdControlB (CdlSetmode, param, 0);	/* set mode */
@@ -95,7 +95,7 @@ void dcAudio_SfxLoad(SDC_Audio *audio, SDC_Sfx* sfx, u_char *data) {
     assert(sfx->spu_address);
     SpuSetTransferStartAddr(sfx->spu_address);                             // Sets a starting address in the sound buffer
     SpuSetTransferMode(SpuTransByDMA);                                     // DMA transfer; can do other processing during transfer
-    u_long transferred = SpuWrite (data + sizeof(VAGhdr), VAG_data_size);  // transfer VAG_data_size bytes from VAG_data  address to sound buffer
+    //u_long transferred = SpuWrite (data + sizeof(VAGhdr), VAG_data_size);  // transfer VAG_data_size bytes from VAG_data  address to sound buffer
     SpuIsTransferCompleted (SPU_TRANSFER_WAIT);                            // Checks whether transfer is completed and waits for completion
 
     sfx->voiceAttributes.mask =                              //~ Attributes (bit string, 1 bit per attribute)
