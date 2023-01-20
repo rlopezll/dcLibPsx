@@ -68,4 +68,42 @@ static inline void DC_LERP_COLOR( const CVECTOR* c0, const CVECTOR* c1, long alp
     cOut->b = DC_MUL(DC_ONE - alpha, c0->b) + DC_MUL(alpha, c1->b);
 }
 
+static inline long dcMath_EaseOutBounce(int x) 
+{
+    static const long n1 = DC_ONE * 7.5625f;
+
+    static const long c1 = DC_ONE / 2.75f;
+    static const long k11 = DC_ONE * (1.5f / 2.75f);
+    static const long k12 = DC_ONE * 0.75f;
+
+    static const long c2 = 2 * DC_ONE / 2.75f;
+    static const long k21 = DC_ONE * (2.25f / 2.75f);
+    static const long k22 = DC_ONE * 0.9375;
+
+    static const long c3 = 2.5f * DC_ONE / 2.75f;
+    static const long k31 = DC_ONE * (2.625f / 2.75f);
+    static const long k32 = DC_ONE * 0.984375f;
+
+    if (x < c1) 
+    {
+        return DC_MUL64(n1, DC_MUL64(x, x));
+    } 
+    else if (x < c2) 
+    {
+        x -= k11;
+        return DC_MUL64(n1, DC_MUL64(x, x)) + k12;
+    } 
+    else if (x < c3) 
+    {
+        x -= k21;
+        return DC_MUL64(n1, DC_MUL64(x, x)) + k22;
+    } 
+    else 
+    {
+        x -= k31;
+        return DC_MUL64(n1, DC_MUL64(x, x)) + k32;
+    }
+
+}
+
 #endif /* _DC_MATH_H */

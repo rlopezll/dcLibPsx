@@ -6,6 +6,16 @@
 #include <libgpu.h>
 #include <libgs.h>
 
+//#define PAL_256
+
+#ifdef PAL_256 /* Do we want 256 (PAL) high ? */
+ #define SCREEN_X 0 /* Offset display by 0 in X */
+ #define SCREEN_Y 24 /* Offset display by 24 in Y */
+#else /* Otherwise assume 240 NSTC high */
+ #define SCREEN_X 0 /* Offset X by 0. */
+ #define SCREEN_Y 28 /* Offset Y by 28 pixels. */
+#endif
+
 /*
  *	Multi-purpose TIM image
  */
@@ -135,6 +145,7 @@ void dcRender_ReportPrimitivesSize(SDC_Render* render);
 
 void dcRender_LoadTexture(SDC_TIM_IMAGE* tim, u_long* texture);
 void dcRender_DrawSpriteRect(SDC_Render* render, const SDC_TIM_IMAGE *tim, short x, short y, short w, short h, const DVECTOR *uv, const CVECTOR *color);
+void dcRender_DrawSpriteRectZ(SDC_Render* render, const SDC_TIM_IMAGE *tim, short x, short y, short w, short h, const DVECTOR *uv, const CVECTOR *color, int otz);
 void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform, SDC_DrawParams* drawParams );
 void dcRender_DrawLine(SDC_Render* render, SVECTOR* v0, SVECTOR* v1, MATRIX* transform, CVECTOR* color, u_short segments);
 

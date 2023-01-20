@@ -30,12 +30,12 @@ void _dcRender_IncPrimitive(SDC_Render* render, size_t offset)
 }
 
 void dcRender_ReportPrimitivesSize(SDC_Render* render) {
-    u_char* base_ptr = render->primitives[render->doubleBufferIndex];
-    size_t nbytes = sizeof(u_char) * render->bytesPrimitives;
-    size_t curr_offset = render->nextPrimitive - base_ptr; 
-    printf("Primitives bytes '%d/%d Triangles '%d' totalPrimitives %d\n", curr_offset, nbytes, totalPrimitives, totalTriangles);
-    totalPrimitives = 0;
-    totalTriangles = 0;
+    // u_char* base_ptr = render->primitives[render->doubleBufferIndex];
+    // size_t nbytes = sizeof(u_char) * render->bytesPrimitives;
+    // size_t curr_offset = render->nextPrimitive - base_ptr; 
+    // //printf("Primitives bytes '%d/%d Triangles '%d' totalPrimitives %d\n", curr_offset, nbytes, totalPrimitives, totalTriangles);
+    // totalPrimitives = 0;
+    // totalTriangles = 0;
 }
 
 void dcRender_Init(SDC_Render* render, int width, int height, CVECTOR bgColor, int orderingTableCount, int bytesPrimitives, EDC_Mode mode) {
@@ -67,6 +67,10 @@ void dcRender_Init(SDC_Render* render, int width, int height, CVECTOR bgColor, i
 
     SetDefDispEnv( &render->displayEnvironment[0], 0, height, width, height );
     SetDefDispEnv( &render->displayEnvironment[1], 0, 0,      width, height );
+
+    /* Apply offsets to display to centre the display */
+    // render->displayEnvironment[0].screen.x = render->displayEnvironment[1].screen.x = SCREEN_X;
+    // render->displayEnvironment[0].screen.y = render->displayEnvironment[1].screen.y = SCREEN_Y;
 
     setRGB0( &render->drawEnvironment[0], bgColor.r, bgColor.g, bgColor.b );
     render->drawEnvironment[0].isbg = 1;
@@ -165,8 +169,15 @@ void dcRender_LoadTexture(SDC_TIM_IMAGE* sdcTim, u_long* texture) {
     DrawSync(0);                                // Wait for drawing to end
 }
 
-void dcRender_DrawSpriteRect(SDC_Render* render, const SDC_TIM_IMAGE *tim, short x, short y, short w, short h, const DVECTOR *uv, const CVECTOR *color) {
+void dcRender_DrawSpriteRect(SDC_Render* render, const SDC_TIM_IMAGE *tim, short x, short y, short w, short h, const DVECTOR *uv, const CVECTOR *color) 
+{
+    dcRender_DrawSpriteRectZ(render, tim, x, y, w, h, uv, color, 0);
+}
+
+void dcRender_DrawSpriteRectZ(SDC_Render* render, const SDC_TIM_IMAGE *tim, short x, short y, short w, short h, const DVECTOR *uv, const CVECTOR *color, int otz)
+{
     SPRT *sprt = (SPRT*)render->nextPrimitive;
+    u_long* ot = render->orderingTable[render->doubleBufferIndex];
 
     setSprt(sprt);
     setXY0(sprt, x, y);
@@ -175,19 +186,16 @@ void dcRender_DrawSpriteRect(SDC_Render* render, const SDC_TIM_IMAGE *tim, short
     SET_UV0_FIX(sprt, uv->vx, uv->vy, tim->prect.x, tim->prect.y);
     setClut(sprt, tim->crect.x, tim->crect.y);
 
-    addPrim(render->orderingTable[render->doubleBufferIndex], sprt);
+    addPrim(ot[otz], sprt);
 
     _dcRender_IncPrimitive(render, sizeof(SPRT));
 
     DR_TPAGE *tpri = (DR_TPAGE*)render->nextPrimitive;
     u_short tpage = getTPage(tim->mode, 0, tim->prect.x, tim->prect.y);
     setDrawTPage(tpri, 0, 0, tpage);
-    addPrim(render->orderingTable[render->doubleBufferIndex], tpri);
+    addPrim(ot[otz], tpri);
     _dcRender_IncPrimitive(render, sizeof(DR_TPAGE));
 }
-
-// #pragma GCC push_options
-// #pragma GCC optimize ("O0")
 
 void dcRender_DrawMesh(SDC_Render* render,  SDC_Mesh3D* mesh, MATRIX* transform, SDC_DrawParams* drawParams) 
 {
