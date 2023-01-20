@@ -95,7 +95,7 @@ void dcAudio_SfxLoad(SDC_Audio *audio, SDC_Sfx* sfx, u_char *data) {
     assert(sfx->spu_address);
     SpuSetTransferStartAddr(sfx->spu_address);                             // Sets a starting address in the sound buffer
     SpuSetTransferMode(SpuTransByDMA);                                     // DMA transfer; can do other processing during transfer
-    //u_long transferred = SpuWrite (data + sizeof(VAGhdr), VAG_data_size);  // transfer VAG_data_size bytes from VAG_data  address to sound buffer
+    SpuWrite (data + sizeof(VAGhdr), VAG_data_size);                       // transfer VAG_data_size bytes from VAG_data  address to sound buffer
     SpuIsTransferCompleted (SPU_TRANSFER_WAIT);                            // Checks whether transfer is completed and waits for completion
 
     sfx->voiceAttributes.mask =                              //~ Attributes (bit string, 1 bit per attribute)
